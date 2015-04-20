@@ -7,6 +7,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var paths = require('../paths');
 var compilerOptions = require('../babel-options');
 var assign = Object.assign || require('object.assign');
+var typescript = require("gulp-typescript");
 
 // transpiles changed es6 files to SystemJS format
 // the plumber() call prevents 'pipe breaking' caused
@@ -19,6 +20,16 @@ gulp.task('build-system', function () {
     .pipe(sourcemaps.init({loadMaps: true}))
     .pipe(to5(assign({}, compilerOptions, {modules:'system'})))
     .pipe(sourcemaps.write({includeContent: false, sourceRoot: paths.sourceMapRelativePath }))
+    .pipe(gulp.dest(paths.output));
+});
+
+// builds typescript files to the dest
+gulp.task('build-typescript', function () {
+  return gulp.src(paths.typescript)
+    .pipe(typescript({
+      typescript: require("typescript"),
+      target: "es6"
+    }))
     .pipe(gulp.dest(paths.output));
 });
 
@@ -36,7 +47,7 @@ gulp.task('build-html', function () {
 gulp.task('build', function(callback) {
   return runSequence(
     'clean',
-    ['build-system', 'build-html'],
+    ['build-system', 'build-typescript', 'build-html'],
     callback
   );
 });
